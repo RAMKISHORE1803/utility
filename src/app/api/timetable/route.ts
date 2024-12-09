@@ -28,11 +28,14 @@ async function getUserDetails(request: NextRequest) {
     return await decodeEmail(supabase);
 }
 
-async function handleRequest(request: NextRequest) {
+export async function GET(request: NextRequest) {
+    console.log('GET request received at /api/timetable');
+    
     try {
         await connectToDatabase();
 
         const userDetails = await getUserDetails(request);
+        console.log('User details:', userDetails ? 'found' : 'not found');
 
         if (!userDetails) {
             return NextResponse.json(
@@ -43,36 +46,15 @@ async function handleRequest(request: NextRequest) {
 
         const Timetable = modelDb(userDetails);
         const data = await Timetable.find();
+        console.log('Timetable data found:', data.length, 'entries');
 
         return NextResponse.json({ timetables: data });
 
     } catch (error) {
-        console.error('Error fetching timetable:', error);
+        console.error('Error in GET /api/timetable:', error);
         return NextResponse.json(
             { message: 'Internal server error' },
             { status: 500 }
         );
     }
-}
-
-// Handle GET requests
-export async function GET(request: NextRequest) {
-    return handleRequest(request);
-}
-
-// Handle POST requests
-export async function POST(request: NextRequest) {
-    return handleRequest(request);
-}
-
-// Handle OPTIONS requests for CORS
-export async function OPTIONS(request: NextRequest) {
-    return new NextResponse(null, {
-        status: 200,
-        headers: {
-            'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
-            'Access-Control-Allow-Headers': 'Content-Type, Authorization',
-            'Access-Control-Allow-Origin': '*'  // Configure this appropriately for production
-        },
-    });
 }
