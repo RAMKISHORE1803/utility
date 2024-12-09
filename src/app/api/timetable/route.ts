@@ -14,11 +14,10 @@ async function createClientFromToken(token: string) {
 }
 
 async function getUserDetails(request: NextRequest) {
-    // Check for token in query parameters first (mobile clients)
-    const searchParams = request.nextUrl.searchParams;
-    const token = searchParams.get('token');
-    
-    if (token) {
+    // Check for Authorization header first (mobile clients)
+    const authHeader = request.headers.get('Authorization');
+    if (authHeader?.startsWith('Bearer ')) {
+        const token = authHeader.substring(7); // Remove 'Bearer ' prefix
         const supabase = await createClientFromToken(token);
         return await decodeEmail(supabase);
     }
@@ -66,14 +65,18 @@ export async function POST(request: NextRequest) {
     return handleRequest(request);
 }
 
-// Handle OPTIONS requests for CORS
+// Update your OPTIONS handler with the correct origin
 export async function OPTIONS(request: NextRequest) {
+    const origin = request.headers.get('origin');
+    const allowedOrigins = ['https://utility-app-csvsd3.flutterflow.app/'];
+    
     return new NextResponse(null, {
         status: 200,
         headers: {
             'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
-            'Access-Control-Allow-Headers': 'Content-Type',  // Removed Authorization since we're using query params
-            'Access-Control-Allow-Origin': '*'  // Configure this appropriately for production
+            'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+            'Access-Control-Allow-Origin': origin && allowedOrigins.includes(origin) ? origin : '*',
+            'Access-Control-Allow-Credentials': 'true'
         },
     });
 }
