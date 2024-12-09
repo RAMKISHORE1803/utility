@@ -14,10 +14,11 @@ async function createClientFromToken(token: string) {
 }
 
 async function getUserDetails(request: NextRequest) {
-    // Check for Authorization header first (mobile clients)
-    const authHeader = request.headers.get('Authorization');
-    if (authHeader?.startsWith('Bearer ')) {
-        const token = authHeader.substring(7); // Remove 'Bearer ' prefix
+    // Check for token in query parameters first (mobile clients)
+    const searchParams = request.nextUrl.searchParams;
+    const token = searchParams.get('token');
+    
+    if (token) {
         const supabase = await createClientFromToken(token);
         return await decodeEmail(supabase);
     }
@@ -71,7 +72,7 @@ export async function OPTIONS(request: NextRequest) {
         status: 200,
         headers: {
             'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
-            'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+            'Access-Control-Allow-Headers': 'Content-Type',  // Removed Authorization since we're using query params
             'Access-Control-Allow-Origin': '*'  // Configure this appropriately for production
         },
     });
