@@ -28,7 +28,7 @@ async function getUserDetails(request: NextRequest) {
     return await decodeEmail(supabase);
 }
 
-export async function GET(request: NextRequest) {
+async function handleRequest(request: NextRequest) {
     try {
         await connectToDatabase();
 
@@ -53,4 +53,26 @@ export async function GET(request: NextRequest) {
             { status: 500 }
         );
     }
+}
+
+// Handle GET requests
+export async function GET(request: NextRequest) {
+    return handleRequest(request);
+}
+
+// Handle POST requests
+export async function POST(request: NextRequest) {
+    return handleRequest(request);
+}
+
+// Handle OPTIONS requests for CORS
+export async function OPTIONS(request: NextRequest) {
+    return new NextResponse(null, {
+        status: 200,
+        headers: {
+            'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+            'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+            'Access-Control-Allow-Origin': '*'  // Configure this appropriately for production
+        },
+    });
 }
